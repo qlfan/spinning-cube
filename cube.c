@@ -1,18 +1,21 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <unistd>
+#include <unistd.h>
 
 float A, B, C;
 float x, y, z;
 float ooz;
 int idx;
 int xp, yp;
+int k1 = 40;
+const int cubeWidth = 30;
 float distanceFromCam = 100;
-int screenWidth = 80;
-int screenHeight = 50;
-char buffer[height * width];
-float zBuffer[height * width];
+#define screenWidth 80
+#define screenHeight 50
+char buffer[screenHeight * screenWidth];
+float zBuffer[screenHeight * screenWidth];
+char backgroundChar = ' ';
 
 float findX(float i, float j, float k){
     return i * cos(B) * cos(C) - j * sin(C) * cos(B)
@@ -54,22 +57,55 @@ int main(){
     printf("\x1b[2J");
 
     while(1){
-        memset(buffer, backgroundChar, width * height);
-        memset(zBuffer, 0, width * height * 4);
-        for(float i = -screenWidth / 2; i < screenWidth / 2; i += 0.12){
-            for(float j = -screenWidth / 2; j < screenWidth / 2; j++){
-                findPoint(i, j, distanceFromCam, '@');
+        memset(buffer, backgroundChar, screenWidth * screenHeight);
+        memset(zBuffer, 0, screenWidth * screenHeight * 4);
+        for(float i = -cubeWidth / 2; i < cubeWidth / 2; i += 0.12){
+            for(float j = -cubeWidth / 2; j < cubeWidth / 2; j += 0.12){
+                findPoint(i, j, -cubeWidth / 2, '@');
+                findPoint(i, cubeWidth / 2, j, '$');
+                findPoint(i, -cubeWidth / 2, -j, '~');
+                findPoint(-i, j, cubeWidth / 2, '#');
+                findPoint(cubeWidth / 2, j, i, '%');
+                findPoint(-cubeWidth / 2, j, -i, '!');
             }
         }
 
         printf("\x1b[H");
-        for(int k = 0; k < width * height; k++){
-            putchar(k % width ? buffer[k] : 10);
+        for(int k = 0; k < screenWidth * screenHeight; k++){
+            if(buffer[k] == '@'){
+                printf("\x1b[31m");
+            }
+
+            else if(buffer[k] == '$'){
+                printf("\x1b[32m");
+            }
+
+            else if(buffer[k] == '~'){
+                printf("\x1b[33m");
+            }
+
+            else if(buffer[k] == '#'){
+                printf("\x1b[34m");
+            }
+
+            else if(buffer[k] == '%'){
+                printf("\x1b[35m");
+            }
+
+            else if(buffer[k] == '!'){
+                printf("\x1b[36m");
+            }
+
+            else{
+                printf("\x1b[37m");
+            }
+
+            putchar(k % screenWidth ? buffer[k] : 10);
         }
         A += 0.03;
-        B += 0.07;
+        B += 0.05;
         C += 0.02;
-        usleep(8000);
+        usleep(10000);
     }
 
     return 0;
